@@ -1,0 +1,44 @@
+on:
+  push:
+    branches:
+      - main
+
+name: Create release
+
+jobs:
+  build:
+    name: Create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create archives
+        run: |
+          zip maps.zip *.bsp
+          ls *.zip||exit 1
+      - name: Remove tag and release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        with:
+          delete_release: true
+          tag_name: snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag as snapshot
+        uses: rickstaa/action-create-tag@v1
+        id: "tag_create"
+        with:
+          tag: "snapshot"
+          tag_exists_error: false
+          message: "Latest release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: ./*.zip
+          tag: snapshot
+          overwrite: true
+          promote: true
+          body: "nQuake maps release."
