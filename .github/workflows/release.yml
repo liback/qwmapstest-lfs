@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          lfs: true
       - name: Create archives
         run: |
           zip maps.zip *.bsp
